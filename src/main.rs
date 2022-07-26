@@ -91,7 +91,8 @@ fn lex(filename: &str) -> Result<Vec<Token>, Error> {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
+    let default_filename = "./data/multi_digit.c".to_string();
+    let filename = args.get(1).unwrap_or(&default_filename);
 
     match lex(filename) {
         Ok(tokens) => {

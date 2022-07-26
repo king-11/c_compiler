@@ -31,7 +31,36 @@ fn recurse_tokens(value: &str) -> Vec<Token> {
 
     let mut tokens = Vec::new();
     let mut end_idx = 0;
-    for val in value.as_bytes() {
+    let byte_array = value.as_bytes();
+    while end_idx < byte_array.len() {
+        if value.get(end_idx..end_idx+3) == Some("int") {
+            tokens.push(Token::Int);
+            end_idx += 3;
+            continue;
+        }
+
+        if value.get(end_idx..end_idx+6) == Some("return") {
+            tokens.push(Token::Return);
+            end_idx += 6;
+            continue;
+        }
+
+        let number_regex = Regex::new("^\\d+").unwrap();
+        if let Some(val) = number_regex.find(&value[end_idx..]) {
+            let result = val.as_str().parse().unwrap();
+            tokens.push(Token::Integer(result));
+            end_idx += val.end();
+            continue;
+        }
+
+        let identifier_regex = Regex::new("^[a-zA-Z]\\w*").unwrap();
+        if let Some(val) = identifier_regex.find(&value[end_idx..]) {
+            tokens.push(Token::Identifier(val.as_str().to_string()));
+            end_idx += val.end();
+            continue;
+        }
+
+        let val = &byte_array[end_idx];
         let simple_token = match *val as char {
             '{' => Token::OpenBrace,
             '}' => Token::CloseBrace,
@@ -44,36 +73,6 @@ fn recurse_tokens(value: &str) -> Vec<Token> {
         tokens.push(simple_token);
     }
 
-    if value.get(end_idx..end_idx+3) == Some("int") {
-        tokens.push(Token::Int);
-        end_idx += 3;
-    }
-
-    if value.get(end_idx..end_idx+6) == Some("return") {
-        tokens.push(Token::Return);
-        end_idx += 6;
-    }
-
-    if end_idx < value.len() {
-        let number_regex = Regex::new("\\d+").unwrap();
-        if let Some(val) = number_regex.find_at(value, end_idx) {
-            if val.start() == end_idx {
-                let result = val.as_str().parse().unwrap();
-                tokens.push(Token::Integer(result));
-                end_idx = val.end();
-            }
-        }
-        let identifier_regex = Regex::new("[a-zA-Z]\\w*").unwrap();
-        if let Some(val) = identifier_regex.find_at(value, end_idx) {
-            if val.start() == end_idx {
-                tokens.push(Token::Identifier(val.as_str().to_string()));
-                end_idx = val.end();
-            }
-        }
-    }
-
-    let mut sub_tokens = recurse_tokens(&value[end_idx..]);
-    tokens.append(&mut sub_tokens);
     tokens
 }
 

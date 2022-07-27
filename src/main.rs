@@ -1,6 +1,7 @@
 use std::{io::{Error, BufReader, BufRead}, fs::File, env};
 
 mod lex;
+mod ast;
 
 fn lex(filename: &str) -> Result<Vec<lex::Token>, Error> {
     let f = File::open(filename)?;
@@ -22,12 +23,17 @@ fn main() {
 
     match lex(filename) {
         Ok(tokens) => {
-            for token in tokens {
-                println!("{}", token);
+            match ast::parse_program(&mut tokens.iter()) {
+                Ok(program) => {
+                    println!("program {:?}", program);
+                },
+                Err(e) => {
+                    println!("error occured: {}", e);
+                }
             }
         },
         Err(e) => {
-            println!("error occured: {}", e);
+            println!("{}", e);
         }
     }
 }

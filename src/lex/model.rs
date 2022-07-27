@@ -13,6 +13,16 @@ pub enum Token {
     Integer(i32)
 }
 
+impl Token {
+    pub fn keywords(value: &str) -> Option<Self> {
+        match value {
+            "int" => Some(Self::Int),
+            "return" => Some(Self::Return),
+            _ => None
+        }
+    }
+}
+
 impl Display for Token {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
       match self {

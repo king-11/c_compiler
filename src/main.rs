@@ -35,7 +35,7 @@ fn main() {
                     file.write_all(assembly.as_bytes()).unwrap();
 
                     Command::new("gcc")
-                        .arg(format!("{}.s", filename))
+                        .arg(path.with_file_name(format!("{}.s", filename)))
                         .arg("-o")
                         .arg(path.with_file_name(format!("{}", filename)))
                         .output()

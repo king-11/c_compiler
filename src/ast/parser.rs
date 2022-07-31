@@ -18,9 +18,13 @@ fn match_token_or_error(token_value: &Token, token_type: Token, error_message: &
 fn parse_expression(tokens: &mut Iter<Token>) -> Result<Expression, Box<dyn Error>> {
   let token = get_token_or_error(tokens, "token not found")?;
 
-  match token {
-    Token::Integer(val) => return Ok(Expression::Const(*val)),
-    _ => return Err(Box::new(MyError("invalid token, type should be Integer")))
+  match *token {
+    Token::Integer(val) => return Ok(Expression::Const(val)),
+    Token::UnaryOperator(op) => {
+      let inner_exp = parse_expression(tokens)?;
+      return Ok(Expression::UnaryOperator { op: op, exp: Box::new(inner_exp) })
+    },
+    _ => return Err(Box::new(MyError("invalid token, type should be UnaryOperator | Integer")))
   }
 }
 

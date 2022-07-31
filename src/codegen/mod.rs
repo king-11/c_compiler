@@ -1,4 +1,4 @@
-use crate::ast::model::*;
+use crate::{ast::model::*, lex::UnaryOperator};
 
 pub fn generate(root: &Program) -> String {
   generate_function(&root.func)
@@ -19,13 +19,24 @@ fn generate_statement(st: &Statement) -> String {
     Statement::Return(val) => {
       let exp = generate_expression(val);
 
-      format!("\tmovl\t${exp}, %eax\n\tret")
+      format!("{exp}\n\tret")
     }
   }
 }
 
 fn generate_expression(exp: &Expression) -> String {
   match exp {
-    Expression::Const(val) => val.to_string()
+    Expression::Const(val) => format!("\tmovl\t${}, %eax", val.to_string()),
+    Expression::UnaryOperator { op, exp } => {
+      let inner_exp = generate_expression(exp);
+      let ext_exp = match op {
+        UnaryOperator::Negation => format!("neg\t%eax"),
+        UnaryOperator::BitwiseComplement => format!("not\t%eax"),
+        UnaryOperator::LogicalNegation => {
+          format!("cmpl\t$0, %eax\n\tmovl\t$0, %eax\n\tsete\t%al")
+        }
+      };
+      format!("{}\n\t{}", inner_exp, ext_exp)
+    }
   }
 }

@@ -1,6 +1,13 @@
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+pub enum UnaryOperator {
+    Negation,
+    BitwiseComplement,
+    LogicalNegation,
+}
+
+#[derive(Debug, Clone)]
 pub enum Token {
     OpenBrace,
     CloseBrace,
@@ -10,7 +17,8 @@ pub enum Token {
     Int,
     Return,
     Identifier(String),
-    Integer(i32)
+    Integer(i32),
+    UnaryOperator(UnaryOperator),
 }
 
 impl Token {

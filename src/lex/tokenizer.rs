@@ -1,12 +1,8 @@
 use regex::Regex;
 
-use super::model::Token;
+use super::model::{Token, UnaryOperator};
 
-pub fn recurse_tokens(value: &str) -> Vec<Token> {
-  if value.is_empty() {
-      return vec![];
-  }
-
+pub fn string_tokenizer(value: &str) -> Vec<Token> {
   let mut tokens = Vec::new();
   let mut end_idx = 0;
   let byte_array = value.as_bytes();
@@ -37,6 +33,9 @@ pub fn recurse_tokens(value: &str) -> Vec<Token> {
         '(' => Token::OpenParenthesis,
         ')' => Token::CloseParenthesis,
         ';' => Token::SemiColon,
+        '-' => Token::UnaryOperator(UnaryOperator::Negation),
+        '~' => Token::UnaryOperator(UnaryOperator::BitwiseComplement),
+        '!' => Token::UnaryOperator(UnaryOperator::LogicalNegation),
         val => if val.is_whitespace() { end_idx += 1; continue } else { break }
     };
     end_idx += 1;

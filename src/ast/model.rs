@@ -1,19 +1,21 @@
 use std::{fmt, error::Error};
 
-#[derive(Debug)]
+use crate::lex::UnaryOperator;
+
 pub enum Expression {
-  Const(i32)
+  Const(i32),
+  UnaryOperator { op: UnaryOperator, exp: Box<Expression> }
 }
 
 impl fmt::Display for Expression {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
       match self {
-        Expression::Const(val) => write!(f, "Int<{}>", val)
+        Expression::Const(val) => write!(f, "Int<{}>", val),
+        Expression::UnaryOperator { op, exp } => write!(f, "{:?}<{}>", op, exp)
       }
   }
 }
 
-#[derive(Debug)]
 pub enum Statement {
   Return(Expression)
 }
@@ -26,13 +28,11 @@ impl fmt::Display for Statement {
   }
 }
 
-#[derive(Debug)]
 pub struct Function {
   pub name: String,
   pub body: Statement
 }
 
-#[derive(Debug)]
 pub struct Program {
   pub func: Function
 }

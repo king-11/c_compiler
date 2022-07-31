@@ -12,7 +12,7 @@ fn lex(path: &str) -> Result<Vec<lex::Token>, Error> {
     let mut token_vector = Vec::new();
     for line in f.lines() {
         let line = line.unwrap();
-        let mut tokens = lex::recurse_tokens(&line);
+        let mut tokens = lex::string_tokenizer(&line);
         token_vector.append(&mut tokens);
     };
 
@@ -21,7 +21,7 @@ fn lex(path: &str) -> Result<Vec<lex::Token>, Error> {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let default_filename = "./data/multi_digit.c".to_string();
+    let default_filename = "./data/stage_2/valid/bitwise.c".to_string();
     let path = Path::new(args.get(1).unwrap_or(&default_filename));
 
     let path_value = path.to_str().unwrap();
@@ -29,6 +29,7 @@ fn main() {
         Ok(tokens) => {
             match ast::parse_program(&mut tokens.iter()) {
                 Ok(program) => {
+                    // println!("{}", program);
                     let assembly = generate(&program);
                     let filename = path.file_stem().unwrap().to_str().unwrap();
                     let mut file = File::create(path.with_file_name(format!("{}.s", filename))).unwrap();

@@ -30,14 +30,14 @@ impl<'a> Scanner<'a> {
 
 pub enum Expression {
   Const(i32),
-  UnaryOperator { op: UnaryOperator, exp: Box<Expression> }
+  Unary { op: UnaryOperator, exp: Box<Expression> }
 }
 
 impl fmt::Display for Expression {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
       match self {
         Expression::Const(val) => write!(f, "Int<{}>", val),
-        Expression::UnaryOperator { op, exp } => write!(f, "{:?}<{}>", op, exp)
+        Expression::Unary { op, exp } => write!(f, "{:?}<{}>", op, exp)
       }
   }
 }

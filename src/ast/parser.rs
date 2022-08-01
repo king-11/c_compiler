@@ -10,7 +10,7 @@ fn parse_expression(tokens: &mut Scanner) -> Result<Expression, Box<dyn Error>> 
     Token::Integer(val) => return Ok(Expression::Const(val)),
     Token::UnaryOperator(op) => {
       let inner_exp = parse_expression(tokens)?;
-      return Ok(Expression::UnaryOperator { op: op, exp: Box::new(inner_exp) })
+      return Ok(Expression::Unary { op: op, exp: Box::new(inner_exp) })
     },
     _ => return Err(Box::new(MyError("invalid token, type should be UnaryOperator | Integer")))
   }

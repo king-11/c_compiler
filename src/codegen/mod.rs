@@ -27,7 +27,7 @@ fn generate_statement(st: &Statement) -> String {
 fn generate_expression(exp: &Expression) -> String {
   match exp {
     Expression::Const(val) => format!("\tmovl\t${}, %eax", val.to_string()),
-    Expression::UnaryOperator { op, exp } => {
+    Expression::Unary { op, exp } => {
       let inner_exp = generate_expression(exp);
       let ext_exp = match op {
         UnaryOperator::Negation => format!("neg\t%eax"),

@@ -1,5 +1,6 @@
 use std::{io::{Error, BufReader, BufRead, Write}, fs::File, env, path::Path, process::Command};
 
+use ast::Scanner;
 use codegen::generate;
 
 mod lex;
@@ -27,7 +28,8 @@ fn main() {
     let path_value = path.to_str().unwrap();
     match lex(path_value) {
         Ok(tokens) => {
-            match ast::parse_program(&mut tokens.iter()) {
+            let mut scanner = Scanner::new(tokens.iter().peekable());
+            match ast::parse_program(&mut scanner) {
                 Ok(program) => {
                     // println!("{}", program);
                     let assembly = generate(&program);

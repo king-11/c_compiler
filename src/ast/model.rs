@@ -1,6 +1,32 @@
-use std::{fmt, error::Error};
+use std::{fmt, error::Error, iter::Peekable, slice::Iter};
 
-use crate::lex::UnaryOperator;
+use crate::lex::{UnaryOperator, Token};
+
+pub struct Scanner<'a> {
+  tokens: Peekable<Iter<'a, Token>>
+}
+
+impl<'a> Scanner<'a> {
+  pub fn new(tokens: Peekable<Iter<'a, Token>>) -> Self {
+    Self {
+      tokens: tokens
+    }
+  }
+  pub fn pop(&mut self, error_message: &'static str) -> Result<&'a Token, Box<dyn Error>> {
+    match self.tokens.next() {
+      Some(val) => Ok(val),
+      None => Err(Box::new(MyError(error_message)))
+    }
+  }
+  pub fn take(&mut self, token_type: Token, error_message: &'static str) -> Result<(), Box<dyn Error>> {
+    let token = self.pop(error_message)?;
+    if *token == token_type {
+      return Ok(());
+    }
+    Err(Box::new(MyError(error_message)))
+  }
+}
+
 
 pub enum Expression {
   Const(i32),

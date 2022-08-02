@@ -36,6 +36,9 @@ pub fn string_tokenizer(value: &str) -> Vec<Token> {
         '-' => Token::Negation,
         '~' => Token::BitwiseComplement,
         '!' => Token::LogicalNegation,
+        '+' => Token::Addition,
+        '*' => Token::Multiplication,
+        '/' => Token::Division,
         val => if val.is_whitespace() { end_idx += 1; continue } else { break }
     };
     end_idx += 1;

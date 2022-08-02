@@ -22,6 +22,28 @@ impl TryFrom<Token> for UnaryOperator {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum BinaryOperator {
+    Addition,
+    Minus,
+    Multiplication,
+    Division,
+}
+
+impl TryFrom<Token> for BinaryOperator {
+    type Error = SyntaxError;
+
+    fn try_from(value: Token) -> Result<Self, Self::Error> {
+        match value {
+            Token::Addition => Ok(Self::Addition),
+            Token::Negation => Ok(Self::Minus),
+            Token::Multiplication => Ok(Self::Multiplication),
+            Token::Division => Ok(Self::Division),
+            _ => Err(SyntaxError::new_lex_error("Can only convert binary operators".to_string()))
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     OpenBrace,
@@ -36,6 +58,9 @@ pub enum Token {
     Negation,
     BitwiseComplement,
     LogicalNegation,
+    Addition,
+    Multiplication,
+    Division,
 }
 
 impl Token {

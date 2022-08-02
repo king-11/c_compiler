@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use super::model::{Token, UnaryOperator};
+use super::model::Token;
 
 pub fn string_tokenizer(value: &str) -> Vec<Token> {
   let mut tokens = Vec::new();
@@ -33,9 +33,9 @@ pub fn string_tokenizer(value: &str) -> Vec<Token> {
         '(' => Token::OpenParenthesis,
         ')' => Token::CloseParenthesis,
         ';' => Token::SemiColon,
-        '-' => Token::UnaryOperator(UnaryOperator::Negation),
-        '~' => Token::UnaryOperator(UnaryOperator::BitwiseComplement),
-        '!' => Token::UnaryOperator(UnaryOperator::LogicalNegation),
+        '-' => Token::Negation,
+        '~' => Token::BitwiseComplement,
+        '!' => Token::LogicalNegation,
         val => if val.is_whitespace() { end_idx += 1; continue } else { break }
     };
     end_idx += 1;

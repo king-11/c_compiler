@@ -1,6 +1,6 @@
-use std::{fmt, error::Error, iter::Peekable, slice::Iter};
+use std::{fmt, iter::Peekable, slice::Iter};
 
-use crate::lex::{UnaryOperator, Token};
+use crate::lex::{UnaryOperator, Token, SyntaxError};
 
 pub struct Scanner<'a> {
   tokens: Peekable<Iter<'a, Token>>
@@ -12,18 +12,18 @@ impl<'a> Scanner<'a> {
       tokens: tokens
     }
   }
-  pub fn pop(&mut self, error_message: &'static str) -> Result<&'a Token, Box<dyn Error>> {
+  pub fn pop(&mut self, error_message: &'static str) -> Result<&'a Token, SyntaxError> {
     match self.tokens.next() {
       Some(val) => Ok(val),
-      None => Err(Box::new(MyError(error_message)))
+      None => Err(SyntaxError::new_parse_error(error_message.to_string()))
     }
   }
-  pub fn take(&mut self, token_type: Token, error_message: &'static str) -> Result<(), Box<dyn Error>> {
+  pub fn take(&mut self, token_type: Token, error_message: &'static str) -> Result<(), SyntaxError> {
     let token = self.pop(error_message)?;
     if *token == token_type {
       return Ok(());
     }
-    Err(Box::new(MyError(error_message)))
+    Err(SyntaxError::new_parse_error(error_message.to_string()))
   }
 }
 
@@ -68,14 +68,3 @@ impl fmt::Display for Program {
       write!(f, "FUN INT {}:\n  params: ()\n  body:\n    {}", self.func.name, self.func.body)
   }
 }
-
-#[derive(Debug)]
-pub struct MyError(pub &'static str);
-
-impl fmt::Display for MyError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error occured: {}", self.0)
-    }
-}
-
-impl Error for MyError {}

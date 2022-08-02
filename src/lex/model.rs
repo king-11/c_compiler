@@ -1,10 +1,52 @@
-use std::fmt::Display;
+use std::{fmt::{Display, self}, error::Error};
+
+#[derive(Debug)]
+pub struct SyntaxError {
+    message: String,
+    level: String,
+}
+
+impl SyntaxError {
+    pub fn new_lex_error(message: String) -> Self {
+        SyntaxError {
+            message,
+            level: "Lex".to_string(),
+        }
+    }
+    pub fn new_parse_error(message: String) -> Self {
+        SyntaxError {
+            message,
+            level: "Parse".to_string(),
+        }
+    }
+}
+
+impl fmt::Display for SyntaxError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} Error {}", self.level, self.message)
+    }
+}
+
+impl Error for SyntaxError {}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum UnaryOperator {
     Negation,
     BitwiseComplement,
     LogicalNegation,
+}
+
+impl TryFrom<Token> for UnaryOperator {
+    type Error = SyntaxError;
+
+    fn try_from(value: Token) -> Result<Self, Self::Error> {
+        match value {
+            Token::Negation => Ok(Self::Negation),
+            Token::BitwiseComplement => Ok(Self::BitwiseComplement),
+            Token::LogicalNegation => Ok(Self::LogicalNegation),
+            _ => Err(SyntaxError::new_lex_error("Can only convert unary operators".to_string()))
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -18,7 +60,9 @@ pub enum Token {
     Return,
     Identifier(String),
     Integer(i32),
-    UnaryOperator(UnaryOperator),
+    Negation,
+    BitwiseComplement,
+    LogicalNegation,
 }
 
 impl Token {

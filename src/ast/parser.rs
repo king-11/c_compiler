@@ -1,22 +1,20 @@
-use std::error::Error;
-
-use crate::lex::Token;
+use crate::lex::{Token, SyntaxError, UnaryOperator};
 use super::model::*;
 
-fn parse_expression(tokens: &mut Scanner) -> Result<Expression, Box<dyn Error>> {
+fn parse_expression(tokens: &mut Scanner) -> Result<Expression, SyntaxError> {
   let token = tokens.pop("token not found")?;
-
   match *token {
     Token::Integer(val) => return Ok(Expression::Const(val)),
-    Token::UnaryOperator(op) => {
+    Token::Negation | Token::BitwiseComplement | Token::LogicalNegation => {
+      let op = UnaryOperator::try_from(token.clone())?;
       let inner_exp = parse_expression(tokens)?;
       return Ok(Expression::Unary { op: op, exp: Box::new(inner_exp) })
     },
-    _ => return Err(Box::new(MyError("invalid token, type should be UnaryOperator | Integer")))
+    _ => return Err(SyntaxError::new_parse_error("invalid token, type should be UnaryOperator | Integer".to_string()))
   }
 }
 
-fn parse_statement(tokens: &mut Scanner) -> Result<Statement, Box<dyn Error>> {
+fn parse_statement(tokens: &mut Scanner) -> Result<Statement, SyntaxError> {
   tokens.take(Token::Return, "invalid token, type should be Return")?;
 
   let expression = parse_expression(tokens)?;
@@ -26,7 +24,7 @@ fn parse_statement(tokens: &mut Scanner) -> Result<Statement, Box<dyn Error>> {
   Ok(Statement::Return(expression))
 }
 
-fn parse_function(tokens: &mut Scanner) -> Result<Function, Box<dyn Error>> {
+fn parse_function(tokens: &mut Scanner) -> Result<Function, SyntaxError> {
   // int
   tokens.take(Token::Int, "invalid token, type should be Int")?;
 
@@ -35,7 +33,7 @@ fn parse_function(tokens: &mut Scanner) -> Result<Function, Box<dyn Error>> {
   let token = tokens.pop("token not found")?;
   match token {
     Token::Identifier(val) => func_name = val.clone(),
-    _ => return Err(Box::new(MyError("invalid token, type should be Identifier")))
+    _ => return Err(SyntaxError::new_parse_error("invalid token, type should be Identifier".to_string()))
   }
 
   // open parenthesis
@@ -55,7 +53,7 @@ fn parse_function(tokens: &mut Scanner) -> Result<Function, Box<dyn Error>> {
   Ok(Function{name: func_name, body: func_body})
 }
 
-pub fn parse_program(tokens: &mut Scanner) -> Result<Program, Box<dyn Error>> {
+pub fn parse_program(tokens: &mut Scanner) -> Result<Program, SyntaxError> {
   let function = parse_function(tokens)?;
 
   Ok(Program{func:function})

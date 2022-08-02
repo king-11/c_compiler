@@ -6,6 +6,7 @@ use codegen::generate;
 mod lex;
 mod ast;
 mod codegen;
+mod utility;
 
 fn lex(path: &str) -> Result<Vec<lex::Token>, Error> {
     let f = File::open(path)?;

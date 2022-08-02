@@ -1,4 +1,4 @@
-use crate::lex::{Token, SyntaxError, UnaryOperator};
+use crate::{lex::{Token, UnaryOperator}, utility::SyntaxError};
 use super::model::*;
 
 fn parse_expression(tokens: &mut Scanner) -> Result<Expression, SyntaxError> {

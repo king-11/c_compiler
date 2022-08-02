@@ -1,6 +1,6 @@
 use std::{fmt, iter::Peekable, slice::Iter};
 
-use crate::lex::{UnaryOperator, Token, SyntaxError};
+use crate::{lex::{UnaryOperator, Token}, utility::SyntaxError};
 
 pub struct Scanner<'a> {
   tokens: Peekable<Iter<'a, Token>>

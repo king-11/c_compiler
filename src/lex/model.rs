@@ -28,6 +28,14 @@ pub enum BinaryOperator {
     Minus,
     Multiplication,
     Division,
+    And,
+    Or,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
 }
 
 impl TryFrom<Token> for BinaryOperator {
@@ -39,6 +47,14 @@ impl TryFrom<Token> for BinaryOperator {
             Token::Negation => Ok(Self::Minus),
             Token::Multiplication => Ok(Self::Multiplication),
             Token::Division => Ok(Self::Division),
+            Token::And => Ok(Self::And),
+            Token::Or => Ok(Self::Or),
+            Token::Equal => Ok(Self::Equal),
+            Token::NotEqual => Ok(Self::NotEqual),
+            Token::LessThan => Ok(Self::LessThan),
+            Token::LessThanOrEqual => Ok(Self::LessThanOrEqual),
+            Token::GreaterThan => Ok(Self::GreaterThan),
+            Token::GreaterThanOrEqual => Ok(Self::GreaterThanOrEqual),
             _ => Err(SyntaxError::new_lex_error("Can only convert binary operators".to_string()))
         }
     }
@@ -61,6 +77,14 @@ pub enum Token {
     Addition,
     Multiplication,
     Division,
+    And,
+    Or,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
 }
 
 impl Token {

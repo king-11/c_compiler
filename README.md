@@ -2,11 +2,11 @@
 
 ## Context
 
-I am currently studying Compilers as a part of my Computer Science and Engineering Curriculum. Given the slow pace of class I have decided that I want a fruitful outcome from this course and hence am building an actual compiler.
+I am currently studying Compilers as a part of my Computer Science and Engineering curriculum. Given the slow pace of class I have decided that I want a fruitful outcome from this course and hence am building an actual compiler.
 
 ## Resource
 
-I have been following the [Writing a C Compiler](https://norasandler.com/2017/11/29/Write-a-Compiler.html) Series by [Nora Sandler](https://norasandler.com/about/). Given the series was made for x32 bit architecture and that isn't the industry standard now I have tried myself to change many of the code generation calls into x86_x64 bit alternative.
+I have been following the [Writing a C Compiler](https://norasandler.com/2017/11/29/Write-a-Compiler.html) Series by [Nora Sandler](https://norasandler.com/about/). Given the series was made for x32 bit architecture and that isn't the industry standard now. I have tried myself to change many of the code generation calls into x86_x64 bit alternative.
 
 ### Testing
 
@@ -35,21 +35,26 @@ The series is provided with a [github repository](https://github.com/nlsandler/w
 - [x] Compile a program that returns a single integer
 - [x] Adding three unary operators (~,-,!)
 - [x] Binary operations to support basic arithmetic while handling operator precedence and associativity
+- [x] boolean operators (&&, ||) and a whole bunch of relational operators (<, ==, etc.)
 
 ## Grammar
 
-The following is grammar supported as of now in [Backus Naur Form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form):
+The following grammar is supported as of now in [Backus Naur Form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form):
 
 ```
 <program> ::= <function>
 <function> ::= "int" <id> "(" ")" "{" <statement> "}"
 <statement> ::= "return" <exp> ";"
 <exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
-<logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
+<logical-and-exp> ::= <bitwise-or-exp> { "&&" <bitwise-or-exp> }
+<bitwise-or-exp> ::== <bitwise-xor-exp> { "|" <bitwise-xor-exp> }
+<bitwise-xor-exp> ::== <bitwise-and-exp> { "^" <bitwise-and-exp> }
+<bitwise-and-exp> ::== <equality-exp> { "&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { ("!=" | "==") <relational-exp> }
-<relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
+<relational-exp> ::= <shift-exp> { ("<" | ">" | "<=" | ">=") <shift-exp> }
+<shift-exp> ::== <additive-exp> { ("<<" | ">>") <additive-exp> }
 <additive-exp> ::= <term> { ("+" | "-") <term> }
-<term> ::= <factor> { ("*" | "/") <factor> }
+<term> ::= <factor> { ("*" | "/" | "%") <factor> }
 <factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int>
 <unary_op> ::= "!" | "~" | "-"
 ```

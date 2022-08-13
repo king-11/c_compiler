@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, rc::Rc};
 
 use crate::utility::SyntaxError;
 
@@ -69,7 +69,7 @@ pub enum Token {
     SemiColon,
     Int,
     Return,
-    Identifier(String),
+    Identifier(Rc<String>),
     Integer(i32),
     Negation,
     BitwiseComplement,

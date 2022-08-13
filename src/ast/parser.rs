@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{lex::{Token, UnaryOperator, BinaryOperator}, utility::SyntaxError};
 use super::model::*;
 
@@ -84,7 +86,7 @@ fn parse_function(tokens: &mut Scanner) -> Result<Function, SyntaxError> {
   // identifier
   let token = tokens.pop("token not found")?;
   match token {
-    Token::Identifier(val) => func_name = val.clone(),
+    Token::Identifier(val) => func_name = Rc::clone(val),
     _ => return Err(SyntaxError::new_parse_error("invalid token, type should be Identifier".to_string()))
   }
 

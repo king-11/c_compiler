@@ -1,4 +1,4 @@
-use std::{fmt, iter::Peekable, slice::Iter};
+use std::{fmt, slice::Iter, rc::Rc};
 
 use crate::{lex::{UnaryOperator, Token, BinaryOperator}, utility::SyntaxError};
 
@@ -62,8 +62,7 @@ impl fmt::Display for Statement {
 }
 
 pub struct Function {
-  pub name: String,
-  pub body: Statement
+  pub name: Rc<String>,
 }
 
 pub struct Program {

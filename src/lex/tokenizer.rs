@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use regex::Regex;
 
 use super::model::Token;
@@ -19,7 +21,7 @@ pub fn string_tokenizer(value: &str) -> Vec<Token> {
             tokens.push(Token::Integer(result));
         }
         else {
-            tokens.push(Token::Identifier(val.as_str().to_string()));
+            tokens.push(Token::Identifier(Rc::new(val.as_str().to_string())));
         }
 
         end_idx += val.end();

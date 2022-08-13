@@ -1,11 +1,14 @@
 use std::{io::{Error, BufReader, BufRead, Write}, fs::File, env, path::Path, process::Command};
 
+mod lex;
+
+mod ast;
 use ast::Scanner;
+use itertools::multipeek;
+
+mod codegen;
 use codegen::generate;
 
-mod lex;
-mod ast;
-mod codegen;
 mod utility;
 
 fn lex(path: &str) -> Result<Vec<lex::Token>, Error> {
@@ -23,13 +26,13 @@ fn lex(path: &str) -> Result<Vec<lex::Token>, Error> {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let default_filename = "./data/stage_2/valid/bitwise.c".to_string();
+    let default_filename = "./data/stage_5/valid/exp_return_val.c".to_string();
     let path = Path::new(args.get(1).unwrap_or(&default_filename));
 
     let path_value = path.to_str().unwrap();
     match lex(path_value) {
         Ok(tokens) => {
-            let mut scanner = Scanner::new(tokens.iter().peekable());
+            let mut scanner = Scanner::new(multipeek(tokens.iter()));
             match ast::parse_program(&mut scanner) {
                 Ok(program) => {
                     // println!("{}", program);

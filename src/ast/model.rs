@@ -1,13 +1,15 @@
 use std::{fmt, slice::Iter, rc::Rc};
 
+use itertools::MultiPeek;
+
 use crate::{lex::{UnaryOperator, Token, BinaryOperator}, utility::SyntaxError};
 
 pub struct Scanner<'a> {
-  tokens: Peekable<Iter<'a, Token>>
+  tokens: MultiPeek<Iter<'a, Token>>
 }
 
 impl<'a> Scanner<'a> {
-  pub fn new(tokens: Peekable<Iter<'a, Token>>) -> Self {
+  pub fn new(tokens: MultiPeek<Iter<'a, Token>>) -> Self {
     Self {
       tokens: tokens
     }
@@ -31,12 +33,17 @@ impl<'a> Scanner<'a> {
     }
     Err(SyntaxError::new_parse_error(error_message.to_string()))
   }
+  pub fn reset_peek(&mut self) {
+    self.tokens.reset_peek();
+  }
 }
 
 pub enum Expression {
   Const(i32),
   Unary { op: UnaryOperator, exp: Box<Expression> },
   Binary { exp1: Box<Expression>, op: BinaryOperator, exp2: Box<Expression>},
+  Assign { name: Rc<String>, exp: Box<Expression>},
+  Var { name: Rc<String>}
 }
 
 impl fmt::Display for Expression {
@@ -45,24 +52,47 @@ impl fmt::Display for Expression {
         Expression::Const(val) => write!(f, "Int({})", val),
         Expression::Unary { op, exp } => write!(f, "{:?}[{}]", op, exp),
         Expression::Binary { exp1, op, exp2 } => write!(f, "{{{}}}{:?}{{{}}}", exp1, op, exp2),
+        Expression::Assign { name, exp } => write!(f, "({} = [{}])", name, exp),
+        Expression::Var { name } => write!(f, "({})", name),
       }
   }
 }
 
 pub enum Statement {
-  Return(Expression)
+  Return(Expression),
+  Exp(Expression),
+  Declare {name: Rc<String>, exp: Option<Expression>}
 }
 
 impl fmt::Display for Statement {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
       match self {
-        Statement::Return(val) => write!(f, "RETURN {}", val)
+        Statement::Return(val) => write!(f, "RETURN {}", val),
+        Statement::Declare { name, exp } => {
+          if let Some(val) = exp {
+            return write!(f, "INT {} = {}", name, val);
+          }
+
+          write!(f, "INT {}", name)
+        }
+        Self::Exp(val) => write!(f, "{}", val),
       }
   }
 }
 
 pub struct Function {
   pub name: Rc<String>,
+  pub body: Vec<Statement>
+}
+
+impl fmt::Display for Function {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+      write!(f, "FUN INT {}:\n  params: ()\n  body:\n", self.name)?;
+      for x in self.body.iter() {
+        write!(f, "    {}\n", x)?;
+      }
+      Ok(())
+  }
 }
 
 pub struct Program {
@@ -71,6 +101,6 @@ pub struct Program {
 
 impl fmt::Display for Program {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-      write!(f, "FUN INT {}:\n  params: ()\n  body:\n    {}", self.func.name, self.func.body)
+      write!(f, "{}", self.func)
   }
 }

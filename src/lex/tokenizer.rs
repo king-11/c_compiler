@@ -61,6 +61,7 @@ pub fn string_tokenizer(value: &str) -> Vec<Token> {
         '/' => Token::Division,
         '<' => Token::LessThan,
         '>' => Token::GreaterThan,
+        '=' => Token::Assignment,
         val => if val.is_whitespace() { end_idx += 1; continue } else { break }
     };
 

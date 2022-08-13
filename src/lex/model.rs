@@ -85,6 +85,7 @@ pub enum Token {
     LessThanOrEqual,
     GreaterThan,
     GreaterThanOrEqual,
+    Assignment,
 }
 
 impl Token {

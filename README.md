@@ -43,19 +43,18 @@ The following grammar is supported as of now in [Backus Naur Form](https://en.wi
 
 ```
 <program> ::= <function>
-<function> ::= "int" <id> "(" ")" "{" <statement> "}"
+<function> ::= "int" <id> "(" ")" "{" { <statement> } "}"
 <statement> ::= "return" <exp> ";"
-<exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
-<logical-and-exp> ::= <bitwise-or-exp> { "&&" <bitwise-or-exp> }
-<bitwise-or-exp> ::== <bitwise-xor-exp> { "|" <bitwise-xor-exp> }
-<bitwise-xor-exp> ::== <bitwise-and-exp> { "^" <bitwise-and-exp> }
-<bitwise-and-exp> ::== <equality-exp> { "&" <equality-exp> }
+              | <exp> ";"
+              | "int" <id> [ = <exp>] ";"
+<exp> ::= <id> "=" <exp> | <logical-or-exp>
+<logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
+<logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
 <equality-exp> ::= <relational-exp> { ("!=" | "==") <relational-exp> }
-<relational-exp> ::= <shift-exp> { ("<" | ">" | "<=" | ">=") <shift-exp> }
-<shift-exp> ::== <additive-exp> { ("<<" | ">>") <additive-exp> }
+<relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
 <additive-exp> ::= <term> { ("+" | "-") <term> }
-<term> ::= <factor> { ("*" | "/" | "%") <factor> }
-<factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int>
+<term> ::= <factor> { ("*" | "/") <factor> }
+<factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int> | <id>
 <unary_op> ::= "!" | "~" | "-"
 ```
 

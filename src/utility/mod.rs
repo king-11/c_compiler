@@ -40,6 +40,12 @@ impl SyntaxError {
             level: "Parse".to_string(),
         }
     }
+    pub fn new_codegen_error(message: String) -> Self {
+        SyntaxError {
+            message,
+            level: "CodeGen".to_string()
+        }
+    }
 }
 
 impl fmt::Display for SyntaxError {

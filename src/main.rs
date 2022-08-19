@@ -7,7 +7,7 @@ use ast::Scanner;
 use itertools::multipeek;
 
 mod codegen;
-use codegen::generate;
+use codegen::CodeGenerator;
 
 mod utility;
 
@@ -36,21 +36,25 @@ fn main() {
             match ast::parse_program(&mut scanner) {
                 Ok(program) => {
                     // println!("{}", program);
-                    let assembly = generate(&program);
-                    let filename = path.file_stem().unwrap().to_str().unwrap();
-                    let mut file = File::create(path.with_file_name(format!("{}.s", filename))).unwrap();
-                    file.write_all(assembly.as_bytes()).unwrap();
+                    let mut codegenerator = CodeGenerator::new();
+                    match codegenerator.generate(&program) {
+                        Ok(assembly) => {
+                            let filename = path.file_stem().unwrap().to_str().unwrap();
+                            let mut file = File::create(path.with_file_name(format!("{}.s", filename))).unwrap();
+                            file.write_all(assembly.as_bytes()).unwrap();
 
-                    Command::new("gcc")
-                        .arg(path.with_file_name(format!("{}.s", filename)))
-                        .arg("-o")
-                        .arg(path.with_file_name(format!("{}", filename)))
-                        .output()
-                        .expect("assembly to elf failed");
-
+                            Command::new("gcc")
+                                .arg(path.with_file_name(format!("{}.s", filename)))
+                                .arg("-o")
+                                .arg(path.with_file_name(format!("{}", filename)))
+                                .output()
+                                .expect("assembly to elf failed");
+                        },
+                        Err(e) => println!("{}", e)
+                    }
                 },
                 Err(e) => {
-                    println!("error occured: {}", e);
+                    println!("{}", e);
                 }
             }
         },

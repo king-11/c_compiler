@@ -7,15 +7,18 @@ use crate::{
   utility::SyntaxError,
 };
 
+/// Scanner implementation to handle iterative parsing of [`Token`] values.
 pub struct Scanner<'a> {
   tokens: MultiPeek<Iter<'a, Token>>,
 }
 
 impl<'a> Scanner<'a> {
+  /// Create new [`Token`] scanner from [`MultiPeek`] iterator.
   pub fn new(tokens: MultiPeek<Iter<'a, Token>>) -> Self {
     Self { tokens: tokens }
   }
 
+  /// Call peek on tokens without advancing itself, [`MultiPeek::next`] resets peek pointer
   pub fn peek(&mut self) -> Option<&Token> {
     match self.tokens.peek() {
       Some(val) => Some(*val),
@@ -23,6 +26,10 @@ impl<'a> Scanner<'a> {
     }
   }
 
+  /// Calls [`MultiPeek::next`] and returns the found token.
+  /// If no token is found throws [`SyntaxError`] with `error_message`.
+  ///
+  /// This resets the pointer of [`Self::peek`].
   pub fn pop(&mut self, error_message: &str) -> Result<&'a Token, SyntaxError> {
     match self.tokens.next() {
       Some(val) => Ok(val),
@@ -30,6 +37,10 @@ impl<'a> Scanner<'a> {
     }
   }
 
+  /// Calls [`Self::pop`] and completes successfully if popped token matches
+  /// else throws [`SyntaxError`] with `error_message`.
+  ///
+  /// This resets the pointer of [`Self::peek`].
   pub fn take(&mut self, token_type: Token, error_message: &str) -> Result<(), SyntaxError> {
     let token = self.pop(error_message)?;
     if *token == token_type {
@@ -38,6 +49,7 @@ impl<'a> Scanner<'a> {
     Err(SyntaxError::new_parse_error(error_message.to_string()))
   }
 
+  /// This resets the pointer of [`Self::peek`].
   pub fn reset_peek(&mut self) {
     self.tokens.reset_peek();
   }

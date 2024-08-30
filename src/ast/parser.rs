@@ -7,7 +7,7 @@ use crate::{
 };
 
 fn parse_factor(tokens: &mut Scanner) -> Result<Expression, SyntaxError> {
-  let token = tokens.pop("token not found")?;
+  let token = tokens.pop("token not found for factor")?;
   match token {
     Token::OpenParenthesis => {
       let inner_exp = parse_expression(tokens)?;
@@ -26,7 +26,7 @@ fn parse_factor(tokens: &mut Scanner) -> Result<Expression, SyntaxError> {
       name: Rc::clone(val),
     }),
     Token::Integer(val) => Ok(Expression::Const(*val)),
-    _ => Err(SyntaxError::new_parse_error("invalid tokens".to_string())),
+    _ => Err(SyntaxError::new_parse_error("invalid tokens for factor".to_string())),
   }
 }
 
@@ -103,110 +103,99 @@ fn parse_logical_and_expression(tokens: &mut Scanner) -> Result<Expression, Synt
 
 fn parse_expression(tokens: &mut Scanner) -> Result<Expression, SyntaxError> {
   if let Some(val) = tokens.peek() {
-    match val {
-      Token::Identifier(id) => {
-        let identifier = Rc::clone(id);
+    if let Token::Identifier(id) = val {
+      let identifier = Rc::clone(id);
 
-        if let Some(assign) = tokens.peek() {
-          match assign {
-            Token::Assignment => {
-              // not expecting an error here
-              tokens.pop("")?;
+      if let Some(Token::Assignment) = tokens.peek() {
+        // only pop identifier if assignment token found
+        tokens.pop("")?;
+        tokens.take(
+          Token::Assignment,
+          "expecting an assignment operator over here",
+        )?;
 
-              // not expecting an error here
-              tokens.take(
-                Token::Assignment,
-                "expecting an assignment operator over here",
-              )?;
-
-              let inner_exp = parse_expression(tokens)?;
-              return Ok(Expression::Assign {
-                name: identifier,
-                exp: Box::new(inner_exp),
-              });
-            }
-            _ => (),
-          }
-        }
+        let inner_exp = parse_expression(tokens)?;
+        return Ok(Expression::Assign {
+          name: identifier,
+          exp: Box::new(inner_exp),
+        });
       }
-      _ => (),
     }
+
+    tokens.reset_peek();
+    return parse_sub_function(tokens, parse_logical_and_expression, &[BinaryOperator::Or]);
   }
-  tokens.reset_peek();
-  parse_sub_function(tokens, parse_logical_and_expression, &[BinaryOperator::Or])
+
+  Err(SyntaxError::new_parse_error("expected tokens for expression".to_string()))
+}
+
+fn parse_return_statement(tokens: &mut Scanner) -> Result<Statement, SyntaxError> {
+  tokens.take(Token::Return, "expected return token")?;
+  let expression = parse_expression(tokens)?;
+  tokens.take(Token::SemiColon, "invalid token, type should be SemiColon")?;
+  Ok(Statement::Return(expression))
+}
+
+fn parse_int_declaration_statement(tokens: &mut Scanner) -> Result<Statement, SyntaxError> {
+  tokens.take(Token::Int, "expected int token")?;
+  let token = tokens.pop("token not found")?;
+
+  if let Token::Identifier(identifier_name) = token {
+    let exp = if let Some(Token::Assignment) = tokens.peek() {
+      tokens.take(Token::Assignment, "")?;
+      Some(parse_expression(tokens)?)
+    } else {
+      None
+    };
+
+    tokens.take(
+      Token::SemiColon,
+      "expecting a semicolon at end of declaration",
+    )?;
+
+    return Ok(Statement::Declare {
+      name: Rc::clone(identifier_name),
+      exp: exp,
+    });
+  }
+
+  Err(SyntaxError::new_parse_error(
+    "expected a identifier".to_string(),
+  ))
 }
 
 fn parse_statement(tokens: &mut Scanner) -> Result<Statement, SyntaxError> {
   if let Some(val) = tokens.peek() {
-    match val {
-      Token::Return => {
-        // not expecting error here
-        tokens.take(Token::Return, "")?;
-        let expression = parse_expression(tokens)?;
-
-        tokens.take(Token::SemiColon, "invalid token, type should be SemiColon")?;
-
-        return Ok(Statement::Return(expression));
+    return match val {
+      Token::Return => parse_return_statement(tokens),
+      Token::Int => parse_int_declaration_statement(tokens),
+      _ => {
+        tokens.reset_peek();
+        let exp = parse_expression(tokens)?;
+        tokens.take(Token::SemiColon, "expecting a semi colon")?;
+        Ok(Statement::Exp(exp))
       }
-      Token::Int => {
-        // not expecting error here
-        tokens.take(Token::Int, "")?;
-
-        let identifier = tokens.pop("indetifier not found")?;
-        match identifier {
-          Token::Identifier(identifier_name) => {
-            let mut exp: Option<Expression> = None;
-            if let Some(assign) = tokens.peek() {
-              match assign {
-                Token::Assignment => {
-                  // not expecting error here
-                  tokens.take(Token::Assignment, "")?;
-                  exp = Some(parse_expression(tokens)?);
-                }
-                _ => (),
-              }
-            }
-            tokens.reset_peek();
-            tokens.take(
-              Token::SemiColon,
-              "expecting a semicolon at end of declaration",
-            )?;
-            return Ok(Statement::Declare {
-              name: Rc::clone(identifier_name),
-              exp: exp,
-            });
-          }
-          _ => {
-            return Err(SyntaxError::new_parse_error(
-              "expected a identifier".to_string(),
-            ))
-          }
-        }
-      }
-      _ => (),
     }
   }
-  tokens.reset_peek();
-  let exp = parse_expression(tokens)?;
-  tokens.take(Token::SemiColon, "expecting a semi colon")?;
-  Ok(Statement::Exp(exp))
+
+  Err(SyntaxError::new_parse_error(
+    "expected tokens for statement".to_string(),
+  ))
 }
 
 fn parse_function(tokens: &mut Scanner) -> Result<Function, SyntaxError> {
   // int
   tokens.take(Token::Int, "invalid token, type should be Int")?;
 
-  let func_name;
   // identifier
   let token = tokens.pop("token not found")?;
-  match token {
-    Token::Identifier(val) => func_name = Rc::clone(val),
-    _ => {
-      return Err(SyntaxError::new_parse_error(
-        "invalid token, type should be Identifier".to_string(),
-      ))
-    }
-  }
+  let func_name = if let Token::Identifier(val) = token {
+    Rc::clone(val)
+  } else {
+    return Err(SyntaxError::new_parse_error(
+    "invalid token, type should be Identifier".to_string(),
+    ))
+  };
 
   // open parenthesis
   tokens.take(
